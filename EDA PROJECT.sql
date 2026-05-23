@@ -1,0 +1,80 @@
+select*from layoffs_stagging2;
+
+select max(TOTAL_LAID_OFF), max(PERCENTAGE_LAID_OFF)
+FROM layoffs_stagging2;
+
+SELECT* FROM layoffs_stagging2
+WHERE percentage_laid_off = 1
+ORDER BY funds_raised_millions DESC;
+
+SELECT COMPANY,sum(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+group by COMPANY
+ORDER BY 2 DESC;
+
+SELECT min(`date`), max(`DATE`)
+FROM layoffs_stagging2;
+
+SELECT COUNTRY, sum(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+GROUP BY COMPANY
+ORDER BY 2 DESC;
+
+SELECT * FROM layoffs_stagging2;
+
+SELECT YEAR(`DATE`), SUM(TOTAL_LAID_OFF)
+from layoffs_stagging2
+GROUP BY year(`DATE`)
+ORDER BY 1 DESC;
+
+SELECT STAGE, sum(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+group by STAGE
+ORDER BY 2 desc;
+
+SELECT COMPANY,avg(PERCENTAGE_LAID_OFF)
+FROM layoffs_stagging2
+GROUP BY company
+ORDER BY 2 DESC;
+SELECT substring(DATE,1,7) AS `MONTH`, sum(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+WHERE substring(`DATE`,1,7) IS NOT NULL 
+GROUP BY `MONTH`
+ORDER BY 1 ASC
+;
+
+WITH ROLLING_TOTAL AS
+(
+SELECT substring(DATE,1,7) AS `MONTH`, sum(TOTAL_LAID_OFF) AS TOTAL_OFF
+FROM layoffs_stagging2
+WHERE substring(`DATE`,1,7) IS NOT NULL 
+GROUP BY `MONTH`
+ORDER BY 1 ASC
+)
+SELECT `MONTH`,TOTAL_OFF,
+SUM(TOTAL_OFF) OVER(ORDER BY `MONTH`) AS ROLLING_TOTAL
+FROM ROLLING_TABEL;
+
+SELECT COMPANY, sum(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+group by STAGE
+ORDER BY 2 desc;
+SELECT company, YEAR(`DATE`), SUM(TOTAL_LAID_OFF)
+from layoffs_stagging2
+GROUP BY company,year(`DATE`)
+ORDER BY 3 DESC;
+
+WITH COMPANY_YEAR (COMPANY,YEARS,TOTAL_LAID_OFF) AS
+(
+SELECT company, YEAR(`DATE`), SUM(TOTAL_LAID_OFF)
+FROM layoffs_stagging2
+GROUP BY company,year(`DATE`)
+),COMPANY_YEAR_RANK AS
+ 
+(SELECT *,
+ DENSE_RANK() OVER(PARTITION BY YEARS ORDER BY TOTAL_LAID_OFF DESC)AS RANKING
+FROM COMPANY_YEAR
+WHERE YEARS IS NOT NULL )
+SELECT * FROM COMPANY_YEAR_RANK
+WHERE RANKING<=5
+;
